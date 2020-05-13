@@ -1,0 +1,125 @@
+Turbo Assembler	 Version 4.1	    03/23/20 18:19:12	    Page 1
+filwwork.asm
+
+
+
+      1				     locals @@
+      2	0000			     .model tiny
+      3
+      4	0000			     .code
+      5				     org 100h
+      6
+      7	0100			     Start:
+      8	0100  B4 35				 mov ah, 35h
+      9	0102  B0 28				 mov al, 28h
+     10	0104  CD 21				 int 21h
+     11	0106  89 1E 0027r			 mov word ptr sysHandler28, bx
+     12	010A  8C 06 0029r			 mov word ptr sysHandler28 + 2,	es
+     13
+     14	010E  B4 25				 mov ah, 25h
+     15	0110  B0 28				 mov al, 28h
+     16	0112  BA 011Fr				 mov dx, offset	clearFileWrite
+     17	0115  CD 21				 int 21h
+     18
+     19	0117  B8 3100				 mov ax, 3100h
+     20	011A  BA 002Fr				 mov dx, offset	EndInt
+     21	011D  CD 21				 int 21h
+     22
+     23
+     24				     ;=====================================================
+     25				     ;int 28h
+     26				     ;write file
+     27				     ;=====================================================
+     28	011F			     clearFileWrite proc
+     29	011F  9C				 pushf
+     30	0120  2E: FF 1E	0027r			 call cs:sysHandler28
+     31	0125  50 53 51 52 1E 06	57		 push ax bx cx dx ds es	di
+     32
+     33	012C  8C C8				 mov ax, cs
+     34	012E  8E D8				 mov ds, ax
+     35
+     36	0130  B4 3D				 mov ah, 3dh
+     37	0132  B0 01				 mov al, 1
+     38	0134  BA 0000r				 mov dx, offset	logPath
+     39	0137  CD 21				 int 21h
+     40
+     41	0139  A3 002Br				 mov fileHandle, ax
+     42
+     43	013C  B4 42				 mov ah, 42h
+     44	013E  8B 1E 002Br			 mov bx, fileHandle
+     45	0142  B0 02				 mov al, 2
+     46	0144  B9 0000				 mov cx, 0
+     47	0147  BA 0000				 mov dx, 0
+     48	014A  CD 21				 int 21h
+     49
+     50	014C  B4 40				 mov ah, 40h
+     51	014E  B9 0006				 mov cx, 6d
+     52	0151  BA 0021r				 mov dx, offset	wrBuf
+     53	0154  CD 21				 int 21h
+     54
+     55	0156  B4 3E				 mov ah, 3eh
+     56	0158  CD 21				 int 21h
+     57
+Turbo Assembler	 Version 4.1	    03/23/20 18:19:12	    Page 2
+filwwork.asm
+
+
+
+     58	015A  5F 07 1F 5A 59 5B	58		 pop  di es ds dx cx bx	ax
+     59	0161  CF				 iret
+     60	0162					 endp
+     61
+     62	0162			     .data
+     63	0000			     Data:
+     64	0000  73 3A 5C 64 6F 63	5C+  logPath	 db "s:\doc\projects\keyloger\key.log",	0
+     65	      70 72 6F 6A 65 63	74+
+     66	      73 5C 6B 65 79 6C	6F+
+     67	      67 65 72 5C 6B 65	79+
+     68	      2E 6C 6F 67 00
+     69	0021  48 65 6C 6C 6F 21	     wrBuf	 db "Hello!"
+     70	0027  ????????		     sysHandler28  dd ?
+     71	002B  ????		     fileHandle	 dw ?
+     72	002D  ????		     dsss	dw ?
+     73
+     74	002F			     EndInt:
+     75				     end Start
+Turbo Assembler	 Version 4.1	    03/23/20 18:19:12	    Page 3
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "03/23/20"
+??FILENAME			  Text	 "filwwork"
+??TIME				  Text	 "18:19:12"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@CODE				  Text	 DGROUP
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _DATA
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 FILWWORK
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 1
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+CLEARFILEWRITE			  Near	 DGROUP:011F
+DATA				  Near	 DGROUP:0000
+DSSS				  Word	 DGROUP:002D
+ENDINT				  Near	 DGROUP:002F
+FILEHANDLE			  Word	 DGROUP:002B
+LOGPATH				  Byte	 DGROUP:0000
+START				  Near	 DGROUP:0100
+SYSHANDLER28			  Dword	 DGROUP:0027
+WRBUF				  Byte	 DGROUP:0021
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  _DATA				  16  002F Word	  Public  DATA
+  _TEXT				  16  0162 Word	  Public  CODE
+

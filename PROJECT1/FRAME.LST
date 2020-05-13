@@ -1,0 +1,280 @@
+Turbo Assembler	 Version 4.1	    03/03/20 17:43:44	    Page 1
+frame.asm
+
+
+
+      1				     locals @@
+      2				     .186
+      3	0000			     .model tiny
+      4
+      5	0000			     .data
+      6	0000  41 73 73 65 6D 62	6C+  Message	     db	"Assembler: Am I joke to you?$"
+      7	      65 72 3A 20 41 6D	20+
+      8	      49 20 6A 6F 6B 65	20+
+      9	      74 6F 20 79 6F 75	3F+
+     10	      24
+     11
+     12	001D			     .code
+     13				     org 100h
+     14
+     15	0100  E8 00CA		     Start:	     call FillZero
+     16
+     17	0103  6A 3B					     push 59d	  ;cx
+     18	0105  68 0909					     push 0909h	      ;bx
+     19	0108  6A 04					     push 4d  ;dx
+     20
+     21	010A  B4 86		     ZoomFrame:	     mov ah, 86h       ;wait 0.5s
+     22	010C  B9 0007					     mov cx, 7h
+     23	010F  BA A120					     mov dx, 0a120h
+     24	0112  CD 15					     int 15h
+     25
+     26	0114  5A					     pop dx
+     27	0115  5B					     pop bx
+     28	0116  59				 pop cx
+     29	0117  51					     push cx
+     30	0118  E8 003C				 call Frame
+     31
+     32
+     33	011B  59					     pop cx
+     34	011C  83 C1 02					     add cx, 2
+     35	011F  51					     push cx
+     36	0120  80 C2 02					     add dl, 2
+     37	0123  FE CF					     dec bh
+     38	0125  FE CB					     dec bl
+     39
+     40	0127  53					     push bx
+     41	0128  52					     push dx
+     42	0129  80 FF 00					     cmp bh, 0
+     43	012C  77 DC					     ja	ZoomFrame
+     44
+     45
+     46	012E  BF 07B4					     mov di, (80d*12d +	26d)*2d
+     47	0131  BB 0000r					     lea bx, Message
+     48	0134  E8 000C					     call WriteMes
+     49
+     50	0137  B4 00		     WaitClick:	     mov ah, 00h
+     51	0139  B3 78					     mov bl, 78h
+     52	013B  CD 16					     int 16h
+     53	013D  3A D8					     cmp bl, al
+     54	013F  75 F6					     jne WaitClick
+     55
+     56	0141  CD 20				 int 20h
+     57
+Turbo Assembler	 Version 4.1	    03/03/20 17:43:44	    Page 2
+frame.asm
+
+
+
+     58
+     59				     ;===========================================================
+     60				     ;Write message
+     61				     ;Entry:
+     62				     ;di - message start
+     63				     ;bx - pointer to message
+     64				     ;Destr:
+     65				     ;ax, bx, di, es
+     66				     ;===========================================================
+     67	0143			     WriteMes	     proc
+     68	0143  B8 B800					     mov ax, 0b800h
+     69	0146  8E C0					     mov es, ax
+     70	0148  B4 24					     mov ah, '$'
+     71	014A  EB 04 90					     jmp @@check
+     72
+     73	014D  AA		     @@Print:	     stosb
+     74	014E  47					     inc di
+     75	014F  43					     inc bx
+     76
+     77	0150  8A 07		     @@check:	     mov al, byte ptr [bx]
+     78	0152  3A C4					     cmp al, ah
+     79	0154  75 F7					     jne @@Print
+     80
+     81	0156  C3					     ret
+     82	0157						     endp
+     83
+     84				     ;===========================================================
+     85				     ;Draw frame on screen
+     86				     ;Entry:
+     87				     ;cx - num repiats of central elements
+     88				     ;bx - left	up corner (bl -	x, bh -	y)
+     89				     ;dl - num of rows
+     90				     ;Destr: cx, dx, ax, es, di, bx
+     91				     ;===========================================================
+     92
+     93	0157			     Frame	 proc
+     94	0157  51				 push cx
+     95
+     96	0158  B8 B800					     mov ax, 0b800h
+     97	015B  8E C0					     mov es, ax
+     98
+     99	015D  B0 A0					     mov al, 80d*2
+    100	015F  F6 E7					     mul bh
+    101	0161  8A CB					     mov cl, bl
+    102	0163  02 CB					     add cl, bl
+    103	0165  03 C1					     add ax, cx
+    104	0167  8B F8				 mov di, ax
+    105
+    106	0169  59					     pop cx
+    107	016A  51					     push cx
+    108
+    109	016B  B0 C9				 mov al, 0c9h
+    110	016D  B4 5E				 mov ah, 05eh
+    111	016F  AB				 stosw
+    112
+    113	0170  B0 CD				 mov al, 0cdh
+    114	0172  F3> AB				 rep stosw
+Turbo Assembler	 Version 4.1	    03/03/20 17:43:44	    Page 3
+frame.asm
+
+
+
+    115
+    116	0174  B0 BB				 mov al, 0bbh
+    117	0176  AB				 stosw
+    118
+    119	0177  B6 00				 mov dh, 0
+    120
+    121	0179  59		     @@Center:	     pop cx
+    122	017A  51				 push cx
+    123
+    124	017B  E8 0043					     call nextLine
+    125
+    126	017E  B0 BA				 mov al, 0bah
+    127	0180  B4 5E				 mov ah, 05eh
+    128	0182  AB				 stosw
+    129
+    130	0183  B0 00				 mov al, 0
+    131	0185  F3> AB				 rep stosw
+    132
+    133	0187  B0 BA				 mov al, 0bah
+    134	0189  AB				 stosw
+    135
+    136	018A  E8 002A					     call shadow
+    137
+    138	018D  FE C6				 inc dh
+    139	018F  3A F2				 cmp dh, dl
+    140	0191  72 E6				 jb @@Center
+    141
+    142
+    143	0193  59		     @@Down:	 pop cx
+    144	0194  51					     push cx
+    145
+    146	0195  E8 0029					 call nextLine
+    147
+    148	0198  B0 C8				 mov al, 0c8h
+    149	019A  B4 5E				 mov ah, 05eh
+    150	019C  AB				 stosw
+    151
+    152	019D  B0 CD				 mov al, 0cdh
+    153	019F  F3> AB				 rep stosw
+    154
+    155	01A1  B0 BC				 mov al, 0bch
+    156	01A3  AB				 stosw
+    157
+    158	01A4  E8 0010					     call shadow
+    159	01A7  59					     pop cx
+    160
+    161	01A8  E8 0016					     call nextLine
+    162	01AB  83 C7 02					     add di, 2
+    163	01AE  83 C1 02					     add cx, 2
+    164	01B1  B8 1E00					     mov ax, 1e00h
+    165	01B4  F3> AB					     rep stosw
+    166
+    167	01B6  C3				 ret
+    168	01B7					 endp
+    169
+    170				     ;========================================================
+    171				     ;print one	ceil
+Turbo Assembler	 Version 4.1	    03/03/20 17:43:44	    Page 4
+frame.asm
+
+
+
+    172				     ;========================================================
+    173	01B7			     shadow	     proc
+    174	01B7  50					     push ax
+    175	01B8  B8 1E00					     mov ax, 1e00h
+    176	01BB  AB					     stosw
+    177	01BC  83 EF 02					     sub di, 2
+    178	01BF  58					     pop ax
+    179
+    180	01C0  C3					     ret
+    181	01C1						     endp
+    182				     ;========================================================
+    183				     ;nextStr
+    184				     ;========================================================
+    185	01C1			     nextLine	     proc
+    186	01C1  2B F9					     sub di, cx
+    187	01C3  2B F9					     sub di, cx
+    188	01C5  83 EF 04					     sub di, 4
+    189	01C8  81 C7 00A0				     add di, 80d*2
+    190
+    191	01CC  C3					     ret
+    192	01CD						     endp
+    193
+    194				     ;========================================================
+    195				     ;Fill screen with zero
+    196				     ;
+    197				     ;Destr:
+    198				     ;ax, es, bx, cx
+    199				     ;========================================================
+    200	01CD			     FillZero	 proc
+    201	01CD  B8 B800				 mov ax, 0b800h
+    202	01D0  8E C0					     mov es, ax
+    203	01D2  BB 0000					     mov bx, 0
+    204
+    205	01D5  B9 0FA0					     mov cx, (80d*25d)*2d
+    206	01D8  26: C6 07	00	     @@Fill:	     mov byte ptr es: [bx], 0
+    207	01DC  43					     inc bx
+    208	01DD  26: C6 07	00				     mov byte ptr es: [bx], 0
+    209	01E1  43					     inc bx
+    210	01E2  3B D9					     cmp bx, cx
+    211	01E4  72 F2					     jb	@@Fill
+    212	01E6  C3				 ret
+    213
+    214	01E7					 endp
+    215				     end Start
+Turbo Assembler	 Version 4.1	    03/03/20 17:43:44	    Page 5
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "03/03/20"
+??FILENAME			  Text	 "frame	  "
+??TIME				  Text	 "17:43:44"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@@CENTER			  Near	 DGROUP:0179
+@@CHECK				  Near	 DGROUP:0150
+@@DOWN				  Near	 DGROUP:0193
+@@FILL				  Near	 DGROUP:01D8
+@@PRINT				  Near	 DGROUP:014D
+@CODE				  Text	 DGROUP
+@CODESIZE			  Text	 0
+@CPU				  Text	 0103H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 FRAME
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 1
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+FILLZERO			  Near	 DGROUP:01CD
+FRAME				  Near	 DGROUP:0157
+MESSAGE				  Byte	 DGROUP:0000
+NEXTLINE			  Near	 DGROUP:01C1
+SHADOW				  Near	 DGROUP:01B7
+START				  Near	 DGROUP:0100
+WAITCLICK			  Near	 DGROUP:0137
+WRITEMES			  Near	 DGROUP:0143
+ZOOMFRAME			  Near	 DGROUP:010A
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  _DATA				  16  001D Word	  Public  DATA
+  _TEXT				  16  01E7 Word	  Public  CODE
+

@@ -1,0 +1,54 @@
+Turbo Assembler	 Version 4.1	    02/13/20 00:37:02	    Page 1
+ascii.asm
+
+
+
+      1	0000			     .model tiny
+      2	0000			     .code
+      3				     org 100h
+      4
+      5	0100  B4 0E		     Start:	     mov ah, 0eh
+      6	0102  B0 00				     mov al, 0
+      7	0104  B1 00				     mov cl, 0
+      8
+      9	0106  CD 10		     TableCycle:     int 10h
+     10	0108  FE C0				     inc al
+     11	010A  3A C1				     cmp al, cl
+     12	010C  77 F8				     ja	TableCycle
+     13
+     14	010E  CD 20				     int 20h
+     15
+     16				     end Start
+Turbo Assembler	 Version 4.1	    02/13/20 00:37:02	    Page 2
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "02/13/20"
+??FILENAME			  Text	 "ascii	  "
+??TIME				  Text	 "00:37:02"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@CODE				  Text	 DGROUP
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 ASCII
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 1
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+START				  Near	 DGROUP:0100
+TABLECYCLE			  Near	 DGROUP:0106
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  _DATA				  16  0000 Word	  Public  DATA
+  _TEXT				  16  0110 Word	  Public  CODE
+

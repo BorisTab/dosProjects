@@ -1,0 +1,82 @@
+Turbo Assembler	 Version 4.1	    03/01/20 14:48:46	    Page 1
+videotex.asm
+
+
+
+      1	0000			     .model tiny
+      2	0000			     .code
+      3				     org 100h
+      4
+      5	0100  B8 B800		     Start:	     mov ax, 0b800h
+      6	0103  8E C0					     mov es, ax
+      7	0105  BB 0000					     mov bx, 0
+      8
+      9	0108  B9 0FA0					     mov cx, (80d*25d)*2d
+     10
+     11	010B  26: C6 07	00	     FillZero:	     mov byte ptr es: [bx], 0
+     12	010F  43					     inc bx
+     13	0110  26: C6 07	5E				     mov byte ptr es: [bx], 05eh
+     14	0114  43					     inc bx
+     15	0115  3B D9					     cmp bx, cx
+     16	0117  72 F2					     jb	FillZero
+     17
+     18
+     19	0119  BF 08F4					     mov di, (80d*14d +	26d)*2d	  ;Message start
+     20
+     21	011C  B4 24					     mov ah, '$'
+     22	011E  BB 0000r					     lea bx, Message
+     23	0121  8A 07					     mov al, byte ptr [bx]
+     24	0123  AA		     Print:	     stosb
+     25	0124  47					     inc di
+     26	0125  43					     inc bx
+     27	0126  8A 07					     mov al, byte ptr [bx]
+     28	0128  3A C4					     cmp al, ah
+     29	012A  75 F7					     jne Print
+     30
+     31
+     32
+     33	012C  CD 20					     int 20h
+     34
+     35	012E			     .data
+     36	0000  41 73 73 65 6D 62	6C+  Message	     db	"Assembler: Am I joke to you?$"
+     37	      65 72 3A 20 41 6D	20+
+     38	      49 20 6A 6F 6B 65	20+
+     39	      74 6F 20 79 6F 75	3F+
+     40	      24
+     41
+     42				     end Start
+Turbo Assembler	 Version 4.1	    03/01/20 14:48:46	    Page 2
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "03/01/20"
+??FILENAME			  Text	 "videotex"
+??TIME				  Text	 "14:48:46"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@CODE				  Text	 DGROUP
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _DATA
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 VIDEOTEX
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 1
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+FILLZERO			  Near	 DGROUP:010B
+MESSAGE				  Byte	 DGROUP:0000
+PRINT				  Near	 DGROUP:0123
+START				  Near	 DGROUP:0100
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  _DATA				  16  001D Word	  Public  DATA
+  _TEXT				  16  012E Word	  Public  CODE
+
