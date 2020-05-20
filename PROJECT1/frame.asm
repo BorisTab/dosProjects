@@ -9,6 +9,7 @@ Message		db "Assembler: Am I joke to you?$"
 org 100h
 
 Start: 		call FillZero
+			cld
 
 			push 59d     ;cx
 			push 0909h	 ;bx
